@@ -67,9 +67,9 @@ const nextDiff = () => {
 	
 	// for now, assume this never stops or
 	// becomes out of sync from start hour
-	// next.setHours(next.getHours() + 12, 26, 1, 0);
+	next.setHours(next.getHours() + 12, 26, 1, 0);
 	
-	next.setHours(next.getHours(), next.getMinutes(), next.getSeconds() + 5, 0);
+	// next.setHours(next.getHours(), next.getMinutes(), next.getSeconds() + 5, 0);
 	return next - now;
 }
 
