@@ -4,25 +4,44 @@ const fs = require('fs');
 const Discord = require('discord.js');
 const client = new Discord.Client();
 
-let channelID = "";
+// "guildID" : "channelID"
+// each server (guild) can have a single "selected" text channel
+let selectedChannels = {};
+
 const setChannel = (msg, args) => {
 	if (args.length !== 1) {
-		msg.channel.send("Usage: \"&set channelname\"");
+		msg.channel.send("Usage: \"set channelname\"");
 		return;
 	}
-	let name = args[0];
-	let channels = client.channels.cache.filter(channel => channel.type === "text" && channel.name === name);
+	const name = args[0];
+	const guildID = msg.channel.guild.id;
+	const channels = client.channels.cache.filter(channel =>
+		channel.type === "text" &&
+		channel.name === name &&
+		channel.guild.id == guildID);
+	
 	if (channels.size !== 1) {
 		msg.channel.send("Multiple or no text channels were found");
 		return;
 	}
-	
-	let channel = Array.from(channels.values())[0];
-	channelID = channel.id;
-	msg.channel.send(`${channel.id} selected`);
+	const channelID = Array.from(channels.values())[0].id;
+	selectedChannels[guildID] = channelID;
+	msg.channel.send(`${channelID} selected`);
 }
 
-const startDiff = () => {
+const getChannel = (msg, args) => {
+	const guildID = msg.channel.guild.id;
+	const channelID = selectedChannels[guildID];
+	msg.channel.send(`${channelID.length === 0 ? "Nothing" : channelID} selected`);
+}
+
+const killChannel = (msg, args) => {
+	const guildID = msg.channel.guild.id;
+	selectedChannels[guildID] = "";
+	msg.channel.send("Nothing selected");
+}
+
+const initDiff = () => {
 	let EST = -5;
 	let now = new Date();
 	let first = new Date();
@@ -48,16 +67,19 @@ const nextDiff = () => {
 	
 	// for now, assume this never stops or
 	// becomes out of sync from start hour
-	next.setHours(next.getHours() + 12, 26, 1, 0);
+	// next.setHours(next.getHours() + 12, 26, 1, 0);
 	
-	// next.setHours(next.getHours(), next.getMinutes(), next.getSeconds() + 5, 0);
+	next.setHours(next.getHours(), next.getMinutes(), next.getSeconds() + 5, 0);
 	return next - now;
 }
 
 let timeout;
 const sendMessage = () => {
-	if (channelID.length !== 0)
-		client.channels.cache.get(channelID).send("126");
+	for (let guildID in selectedChannels) {
+		let channelID = selectedChannels[guildID];
+		if (channelID.length !== 0)
+			client.channels.cache.get(channelID).send("126");
+	}
 	
 	// setInterval would be smart, but I am not smart
 	timeout = setTimeout(sendMessage, nextDiff());
@@ -65,7 +87,11 @@ const sendMessage = () => {
 
 client.once('ready', () => {
 	console.log('client ready');
-	timeout = setTimeout(sendMessage, startDiff());
+	
+	for (let guildID of client.guilds.cache.keys())
+		selectedChannels[guildID] = "";
+	
+	timeout = setTimeout(sendMessage, initDiff());
 });
 
 
@@ -75,17 +101,19 @@ client.on('message', msg => {
 		return;
 	const args = msg.content.slice(prefix.length).split(/ +/);
 	const cmd = args.shift().toLowerCase();
+	
 	switch (cmd) {
 		case 'set':
 			setChannel(msg, args);
 			break;
 		case 'kill':
-			channelID = "";
-		case 'get':
-			msg.channel.send(`${channelID.length === 0 ? "Nothing" : channelID} selected`);
+			killChannel(msg, args);
 			break;
-		case 'help':
-			msg.channel.send("Try commands \"set\", \"get\" and \"kill\"");
+		case 'get':
+			getChannel(msg, args);
+			break;
+		default:
+			msg.channel.send("Try commands \"set\", \"get\", and \"kill\"");
 			break;
 	}
 });
