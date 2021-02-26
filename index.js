@@ -81,10 +81,11 @@ client.on('message', msg => {
 			break;
 		case 'kill':
 			channelID = "";
-			msg.channel.send("Nothing selected");
+		case 'get':
+			msg.channel.send(`${channelID.length === 0 ? "Nothing" : channelID} selected`);
 			break;
 		case 'help':
-			msg.channel.send("Try commands \"set\" and \"kill\"");
+			msg.channel.send("Try commands \"set\", \"get\" and \"kill\"");
 			break;
 	}
 });
