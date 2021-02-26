@@ -7,7 +7,7 @@ const client = new Discord.Client();
 let channelID = "";
 const setChannel = (msg, args) => {
 	if (args.length !== 1) {
-		msg.channel.send("Invalid command, try \"&set channelname\"");
+		msg.channel.send("Usage: \"&set channelname\"");
 		return;
 	}
 	let name = args[0];
@@ -28,7 +28,7 @@ const startDiff = () => {
 	let first = new Date();
 	
 	// starting time
-	first.setHours(5 + EST, 30, 2, 0);
+	first.setHours(1 + EST, 26, 1, 0);
 	now.setHours(now.getHours() + EST);
 	let diff = first - now;
 	if (diff < 0) {
@@ -42,15 +42,15 @@ const nextDiff = () => {
 	let now = new Date();
 	let next = new Date();
 	// for some reason discord seems to be
-	// about one whole second behind real
-	// time, so simply add two seconds as
+	// a little less than a second behind real
+	// time, so simply add one seconds as
 	// a buffer so we don't arrive too early
 	
 	// for now, assume this never stops or
 	// becomes out of sync from start hour
-	// next.setHours(next.getHours() + 12, 26, 2, 0);
+	next.setHours(next.getHours() + 12, 26, 1, 0);
 	
-	next.setHours(next.getHours(), next.getMinutes() + 10, 2, 0);
+	// next.setHours(next.getHours(), next.getMinutes(), next.getSeconds() + 5, 0);
 	return next - now;
 }
 
@@ -78,6 +78,13 @@ client.on('message', msg => {
 	switch (cmd) {
 		case 'set':
 			setChannel(msg, args);
+			break;
+		case 'kill':
+			channelID = "";
+			msg.channel.send("Nothing selected");
+			break;
+		case 'help':
+			msg.channel.send("Try commands \"set\" and \"kill\"");
 			break;
 	}
 });
