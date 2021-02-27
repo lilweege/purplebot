@@ -4,6 +4,38 @@ const fs = require('fs');
 const Discord = require('discord.js');
 const client = new Discord.Client();
 
+// yoinked from https://stackoverflow.com/questions/8211744/convert-time-interval-given-in-seconds-into-more-human-readable-form
+const human_millis = function (ms, digits=10) {
+    const levels=[
+      ["ms", 1000],
+      ["sec", 60],
+      ["min", 60],
+      ["hrs", 24],
+      ["days", 7],
+      ["weeks", (30/7)], // Months are intuitively around 30 days
+      ["months", 12.1666666666666666], // Compensate for bakari-da in last step
+      ["years", 10],
+      ["decades", 10],
+      ["centuries", 10],
+      ["millenia", 10],
+    ];
+    var value=ms;
+    var name="";
+    var step=1;
+    for(var i=0, max=levels.length;i<max;++i){
+        value/=step;
+        name=levels[i][0];
+        step=levels[i][1];
+        if(value < step){
+            break;
+        }
+        
+    }
+    return value.toFixed(digits)+" "+name;
+}
+
+
+
 let wordList = ["126", "buuuuuuuuuuuuurrrrrrrrrrrrrrp", "rootbeer", "poutine time", "currently right now at the moment grinding fate", "shut the fuck up you dumb crodie"]
 
 // "guildID" : "channelID"
@@ -52,7 +84,7 @@ const initDiff = () => {
 	first.setHours(1, 26, 1, 0);
 	
 	let diff = first - now;
-	if (diff < 0) {
+	while (diff < 0) {
 		first.setHours(first.getHours() + 12);
 		diff = first - now;
 	}
@@ -95,7 +127,7 @@ client.once('ready', () => {
 		selectedChannels[guildID] = "";
 	
 	let time = initDiff();
-	console.log("first in", time, "ms");
+	console.log("first in", time, "ms =>", human_millis(time));
 	timeout = setTimeout(sendMessage, time);
 });
 
