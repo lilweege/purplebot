@@ -4,6 +4,8 @@ const fs = require('fs');
 const Discord = require('discord.js');
 const client = new Discord.Client();
 
+let wordList = ["126", "buuuuuuuuuuuuurrrrrrrrrrrrrrp", "rootbeer", "poutine time", "currently right now at the moment grinding fate", "shut the fuck up you dumb crodie"]
+
 // "guildID" : "channelID"
 // each server (guild) can have a single "selected" text channel
 let selectedChannels = {};
@@ -42,13 +44,13 @@ const killChannel = (msg, args) => {
 }
 
 const initDiff = () => {
-	let EST = -5;
 	let now = new Date();
 	let first = new Date();
 	
 	// starting time
-	first.setHours(1 + EST, 26, 1, 0);
-	now.setHours(now.getHours() + EST);
+	now.setHours(now.getHours());
+	first.setHours(1, 26, 1, 0);
+	
 	let diff = first - now;
 	if (diff < 0) {
 		first.setHours(first.getHours() + 12);
@@ -76,9 +78,10 @@ const nextDiff = () => {
 let timeout;
 const sendMessage = () => {
 	for (let guildID in selectedChannels) {
-		let channelID = selectedChannels[guildID];
+		const channelID = selectedChannels[guildID];
+		const word = wordList[Math.floor(Math.random() * wordList.length)];
 		if (channelID.length !== 0)
-			client.channels.cache.get(channelID).send("126");
+			client.channels.cache.get(channelID).send(word);
 	}
 	
 	// setInterval would be smart, but I am not smart
@@ -91,7 +94,9 @@ client.once('ready', () => {
 	for (let guildID of client.guilds.cache.keys())
 		selectedChannels[guildID] = "";
 	
-	timeout = setTimeout(sendMessage, initDiff());
+	let time = initDiff();
+	console.log("first in", time, "ms");
+	timeout = setTimeout(sendMessage, time);
 });
 
 
@@ -112,8 +117,12 @@ client.on('message', msg => {
 		case 'get':
 			getChannel(msg, args);
 			break;
+		case '126':
+			const word = wordList[Math.floor(Math.random() * wordList.length)];
+			msg.channel.send(word);
+			break;
 		default:
-			msg.channel.send("Try commands \"set\", \"get\", and \"kill\"");
+			msg.channel.send("Try commands \"set\", \"get\", \"kill\" and \"126\"");
 			break;
 	}
 });
