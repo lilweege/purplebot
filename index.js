@@ -76,12 +76,16 @@ const killChannel = (msg, args) => {
 }
 
 const initDiff = () => {
+	
+	// the time offset from the machine
+	// that heroku uses to host and EST
+	let OFFSET = 6;
 	let now = new Date();
 	let first = new Date();
 	
 	// starting time
 	now.setHours(now.getHours());
-	first.setHours(1, 26, 1, 0);
+	first.setHours(1 + OFFSET, 26, 1, 0);
 	
 	let diff = first - now;
 	while (diff < 0) {
