@@ -79,7 +79,7 @@ const initDiff = () => {
 	
 	// the time offset from the machine
 	// that heroku uses to host and EST
-	let OFFSET = -5;
+	let OFFSET = -7;
 	let now = new Date();
 	let first = new Date();
 	
