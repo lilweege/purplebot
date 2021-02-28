@@ -34,49 +34,7 @@ const human_millis = function (ms, digits=10) {
     return value.toFixed(digits)+" "+name;
 }
 
-
-
-let wordList = ["126", "buuuuuuuuuuuuurrrrrrrrrrrrrrp", "rootbeer", "poutine time", "currently right now at the moment grinding fate", "shut the fuck up you dumb crodie"]
-
-// "guildID" : "channelID"
-// each server (guild) can have a single "selected" text channel
-let selectedChannels = {};
-
-const setChannel = (msg, args) => {
-	if (args.length !== 1) {
-		msg.channel.send("Usage: \"set channelname\"");
-		return;
-	}
-	const name = args[0];
-	const guildID = msg.channel.guild.id;
-	const channels = client.channels.cache.filter(channel =>
-		channel.type === "text" &&
-		channel.name === name &&
-		channel.guild.id == guildID);
-	
-	if (channels.size !== 1) {
-		msg.channel.send("Multiple or no text channels were found");
-		return;
-	}
-	const channelID = Array.from(channels.values())[0].id;
-	selectedChannels[guildID] = channelID;
-	msg.channel.send(`${channelID} selected`);
-}
-
-const getChannel = (msg, args) => {
-	const guildID = msg.channel.guild.id;
-	const channelID = selectedChannels[guildID];
-	msg.channel.send(`${channelID.length === 0 ? "Nothing" : channelID} selected`);
-}
-
-const killChannel = (msg, args) => {
-	const guildID = msg.channel.guild.id;
-	selectedChannels[guildID] = "";
-	msg.channel.send("Nothing selected");
-}
-
 const initDiff = () => {
-	
 	// the time offset from the machine
 	// that heroku uses to host and EST
 	let OFFSET = -7;
@@ -111,13 +69,21 @@ const nextDiff = () => {
 	return next - now;
 }
 
+
+
+const alex = "<@275843202219507712>";
+let phraseList = ["126", "buuuuuuuuuuuuurrrrrrrrrrrrrrp", "rootbeer", "poutine time", "currently right now at the moment grinding fate", "shut the fuck up you dumb crodie", `${alex}`];
+const randomPhrase = () => phraseList[Math.floor(Math.random() * phraseList.length)];
+
+// "guildID" : "channelID"
+// each server (guild) can have a single "selected" text channel
+let selectedChannels = {};
 let timeout;
 const sendMessage = () => {
 	for (let guildID in selectedChannels) {
 		const channelID = selectedChannels[guildID];
-		const word = wordList[Math.floor(Math.random() * wordList.length)];
 		if (channelID.length !== 0)
-			client.channels.cache.get(channelID).send(word);
+			client.channels.cache.get(channelID).send(randomPhrase());
 	}
 	
 	// setInterval would be smart, but I am not smart
@@ -135,6 +101,38 @@ client.once('ready', () => {
 	timeout = setTimeout(sendMessage, time);
 });
 
+const setChannel = (msg, args) => {
+	if (args.length !== 1) {
+		msg.channel.send("Usage: \"set channelname\"");
+		return;
+	}
+	const name = args[0];
+	const guildID = msg.channel.guild.id;
+	const channels = client.channels.cache.filter(channel =>
+		channel.type === "text" &&
+		channel.name === name &&
+		channel.guild.id == guildID);
+	
+	if (channels.size !== 1) {
+		msg.channel.send("Multiple or no text channels were found");
+		return;
+	}
+	const channelID = Array.from(channels.values())[0].id;
+	selectedChannels[guildID] = channelID;
+	msg.channel.send(`${channelID} selected`);
+}
+
+const getChannel = (msg, args) => {
+	const guildID = msg.channel.guild.id;
+	const channelID = selectedChannels[guildID];
+	msg.channel.send(`${channelID.length === 0 ? "Nothing" : channelID} selected`);
+}
+
+const killChannel = (msg, args) => {
+	const guildID = msg.channel.guild.id;
+	selectedChannels[guildID] = "";
+	msg.channel.send("Nothing selected");
+}
 
 const prefix = '&';
 client.on('message', msg => {
@@ -154,8 +152,7 @@ client.on('message', msg => {
 			getChannel(msg, args);
 			break;
 		case '126':
-			const word = wordList[Math.floor(Math.random() * wordList.length)];
-			msg.channel.send(word);
+			msg.channel.send(randomPhrase());
 			break;
 		default:
 			msg.channel.send("Try commands \"set\", \"get\", \"kill\" and \"126\"");
