@@ -72,12 +72,12 @@ const nextDiff = () => {
 
 
 const alex = "<@275843202219507712>";
-let phraseList = ["126", "buuuuuuuuuuuuurrrrrrrrrrrrrrp", "rootbeer", "poutine time", "currently right now at the moment grinding fate", "shut the fuck up you dumb crodie", `${alex}`];
+const phraseList = ["126", "buuuuuuuuuuuuurrrrrrrrrrrrrrp", "rootbeer", "poutine time", "currently right now at the moment grinding fate", "shut the fuck up you dumb crodie", `${alex}`];
 const randomPhrase = () => phraseList[Math.floor(Math.random() * phraseList.length)];
 
 // "guildID" : "channelID"
 // each server (guild) can have a single "selected" text channel
-let selectedChannels = {};
+const selectedChannels = {};
 let timeout;
 const sendMessage = () => {
 	for (let guildID in selectedChannels) {
@@ -151,11 +151,11 @@ client.on('message', msg => {
 		case 'get':
 			getChannel(msg, args);
 			break;
-		case '126':
-			msg.channel.send(randomPhrase());
-			break;
+		// case '126':
+			// msg.channel.send(randomPhrase());
+			// break;
 		default:
-			msg.channel.send("Try commands \"set\", \"get\", \"kill\" and \"126\"");
+			msg.channel.send("Try commands \"set\", \"get\", and \"kill\"");
 			break;
 	}
 });
