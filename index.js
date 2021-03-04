@@ -144,7 +144,7 @@ const nextEvent = () => {
 	// the time offset from the machine
 	// that heroku uses to host and EST
 	let EST = 5;
-	let OFFSET = (now.getTimezoneOffset() / 60) - EST;
+	let OFFSET = EST - (now.getTimezoneOffset() / 60);
 	// console.log("machine timezone offset:", OFFSET, "hours");
 	let first = new Date();
 	
