@@ -198,7 +198,7 @@ const triggerEvent = async() => {
 			bet.phrase -= 1;
 			if (bet.phrase === phrase) {
 				let user = getUser(server, bet.userId);
-				user.purpleCoins += bet.amount * 2;
+				user.purpleCoins += bet.amount * phraseList.length;
 				// user.purpleCoins += bet.amount * payout[bet.phrase];
 			}
 		}
