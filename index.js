@@ -416,7 +416,7 @@ client.on('message', msg => {
 	
 	switch (cmd) {
 		// testing
-		case '126': triggerEvent(); break;
+		// case '126': triggerEvent(); break;
 		// admin
 		case 'set': set(msg, args); break;
 		case 'get': get(msg, args); break;
