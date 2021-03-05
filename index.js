@@ -165,6 +165,11 @@ const nextEvent = () => {
 }
 
 
+const version = "1.1";
+const dailyAmount = 75;
+const minimumBet = 25;
+const abstainTax = 50;
+
 // const alex = "<@275843202219507712>";
 const phraseList = ["126", "buuuuuuuuuuuuurrrrrrrrrrrrrrp", "rootbeer", "poutine time", "currently right now at the moment grinding fate", "shut the fuck up you dumb crodie"];
 const randomPhrase = () => Math.floor(Math.random() * phraseList.length);
@@ -194,7 +199,9 @@ const triggerEvent = async() => {
 				user.claimedDaily = false;
 		
 		// payout bets
+		let betters = new Set();
 		for (let bet of server.betList) {
+			betters.add(bet.userId);
 			bet.phrase -= 1;
 			if (bet.phrase === phrase) {
 				let user = getUser(server, bet.userId);
@@ -203,6 +210,15 @@ const triggerEvent = async() => {
 			}
 		}
 		server.betList = [];
+		
+		// coin bleeding
+		for (let user in server.userList)
+			if (!betters.has(user.userId)) {
+				user.purpleCoins -= abstainTax;
+				if (user.purpleCoins < 0)
+					user.purpleCoins = 0;
+			}
+		
 		
 		await server.save(err => {})
 		
@@ -344,7 +360,6 @@ const give = async(msg, args) => {
 
 
 const daily = async(msg, args) => {
-	let dailyAmount = 100;
 	let guildID = msg.guild.id;
 	let server = await findServer(guildID);
 	
@@ -375,8 +390,8 @@ const bet = async(msg, args) => {
 	}
 	
 	amount = parseInt(amount)
-	if (isNaN(amount) || amount <= 0) {
-		msg.channel.send(`Invalid amount`);
+	if (isNaN(amount) || amount < minimumBet) {
+		msg.channel.send(`Invalid amount, must be at least ${minimumBet}`);
 		return;
 	}
 	
@@ -400,6 +415,23 @@ const list = async(msg, args) => {
 	for (let phrase in phraseList)
 		res += `${parseInt(phrase)+1}: ${phraseList[phrase]}\n`;
 	msg.channel.send(res)
+}
+
+const rules = async(msg, args) => {
+	msg.channel.send(`:purple_circle: purplebot126 v${version} gamerules :purple_circle:
+- daily 75 coin claim available every 12 hours
+- if you haven't placed a bet you lose 50 coins
+- the minimum bet amount is 25 coins
+- all coins reset at end of month
+- #1 top is the winner of the month`);
+}
+
+let commands = "set, get, kill, bal, top, give, daily, bet, list, rules, about";
+const about = async(msg, args) => {
+	msg.channel.send(`:purple_circle: purplebot126 v${version} :purple_circle:
+if something breaks, pls tell luigi
+source code at <https://github.com/lilweege/purplebot>
+commands: ${commands}`);
 }
 
 client.once('ready', async() => {
@@ -429,9 +461,11 @@ client.on('message', msg => {
 		// betting
 		case 'bet': bet(msg, args); break;
 		case 'list': list(msg, args); break;
+		case 'rules': rules(msg, args); break;
 		// help
+		case 'about': about(msg, rules); break;
 		default:
-			msg.channel.send("Invalid command, try: set, get, kill, bal, top, give, daily, bet, list");
+			msg.channel.send(`Invalid command, try: ${commands}`);
 			break;
 	}
 });
