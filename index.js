@@ -431,16 +431,20 @@ let commands = "set, get, kill, bal, top, give, daily, bet, list, rules, about";
 const about = async(msg, args) => {
 	msg.channel.send(`:purple_circle: purplebot126 v${version} :purple_circle:
 if something breaks, pls tell luigi
-source code at <https://github.com/lilweege/purplebot>
-commands: ${commands}`);
+source code at <https://github.com/lilweege/purplebot>`);
 }
 
+const help = async(msg, args) => {
+	msg.channel.send(`Commands: ${commands}`);
+}
+
+const prefix = '&';
 client.once('ready', async() => {
-	console.log('client ready');
+	console.log(`client ready as ${client.user.tag}`);
+	client.user.setActivity(`${prefix}help`, {type: "PLAYING"});
 	restartTimeout();
 });
 
-const prefix = '&';
 client.on('message', msg => {
 	if (!msg.content.startsWith(prefix) || msg.author.bot)
 		return;
@@ -465,8 +469,9 @@ client.on('message', msg => {
 		case 'rules': rules(msg, args); break;
 		// help
 		case 'about': about(msg, rules); break;
+		case 'help': help(msg, rules); break;
 		default:
-			msg.channel.send(`Invalid command, try: ${commands}`);
+			msg.channel.send(`Invalid command, try ${prefix}help`);
 			break;
 	}
 });
