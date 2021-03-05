@@ -309,12 +309,16 @@ const top = async(msg, args) => {
 	
 	let i = 0;
 	for (let user in users) {
+		if (!user)
+			continue;
+		
 		let userID = users[user].userId;
-		if (users[user].purpleCoins === 0 || i > 10)
+		if (!users[user] || users[user].purpleCoins === 0 || i > 10)
 			break;
-		let cur = msg.guild.members.cache.get(userID).user;
-		if (cur)
-			board += `#${++i}: ${cur.username} with ${users[user].purpleCoins} coins\n`;
+		
+		let cur = msg.guild.members.cache.get(userID);
+		if (cur && cur.user)
+			board += `#${++i}: ${cur.user.username} with ${users[user].purpleCoins} coins\n`;
 	}
 	msg.channel.send(board);
 }
