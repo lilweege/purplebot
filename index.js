@@ -269,61 +269,45 @@ const kill = async(msg, args) => {
 }
 
 const bal = async(msg, args) => {
-	if (args.length > 1) {
-		msg.channel.send("Usage: \"bal username\"");
-		return;
-	}
-	
-	let userID;
-	let username;
-	let isSelf = args.length === 0;
-	if (isSelf) {
-		username = msg.author.username;
-		userID = msg.author.id;
-	}
-	else {
-		username = args[0];
-		let users = msg.guild.members.cache.filter(member =>
-			member.user.username === username);
-		
-		if (users.size !== 1) {
-			msg.channel.send("Multiple or no users were found");
-			return;
-		}
-		userID = Array.from(users.values())[0].id;
-	}
-	
+	let userID = msg.author.id;
+	let username = msg.author.username;
 	let guildID = msg.guild.id;
 	let server = await findServer(guildID);
 	let user = await getOrCreateUser(server, userID);
 	
-	msg.channel.send(`${username}${isSelf ? ", you have" : " has"} ${user.purpleCoins} purple coins`);
+	msg.channel.send(`${username}, you have ${user.purpleCoins} purple coins`);
 }
 
 const top = async(msg, args) => {
+	msg.channel.send("top command temporarily disabled");
+	return;
+	
 	let board = ":purple_circle: purple coin leaderboard :purple_circle:\n";
 	const guildID = msg.guild.id;
 	let server = await findServer(guildID);
 	let users = server.userList;
 	users.sort((a, b) => b.purpleCoins - a.purpleCoins);
-	
+	// console.log(users);
 	let i = 0;
+	console.log("getting members");
+	let members = msg.guild.members.fetch();
+	console.log("members:", members);
+	
 	for (let user in users) {
-		if (!user)
-			continue;
-		
 		let userID = users[user].userId;
 		if (!users[user] || users[user].purpleCoins === 0 || i > 10)
 			break;
 		
-		let cur = msg.guild.members.cache.get(userID);
-		if (cur && cur.user)
-			board += `#${++i}: ${cur.user.username} with ${users[user].purpleCoins} coins\n`;
+		// if (cur && cur.user)
+			// board += `#${++i}: ${cur.user.username} with ${users[user].purpleCoins} coins\n`;
 	}
 	msg.channel.send(board);
 }
 
 const give = async(msg, args) => {
+	msg.channel.send("give command temporarily disabled");
+	return;
+	
 	if (args.length !== 2) {
 		msg.channel.send("Usage: \"give username amount\"");
 		return;
