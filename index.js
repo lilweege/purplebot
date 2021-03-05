@@ -187,41 +187,42 @@ const restartTimeout = () => {
 const triggerEvent = async() => {
 	let servers = await getServers();
 	for (let server of servers) {
-		// send message
-		let phrase = randomPhrase();
-		let channelID = server.selectedChannel;
-		if (channelID.length !== 0)
-			client.channels.cache.get(channelID).send(phraseList[phrase]);
-		
 		// reset daily claims
 		for (let user of server.userList)
 			if (user.claimedDaily)
 				user.claimedDaily = false;
 		
-		// payout bets
-		let betters = new Set();
-		for (let bet of server.betList) {
-			betters.add(bet.userId);
-			bet.phrase -= 1;
-			if (bet.phrase === phrase) {
-				let user = getUser(server, bet.userId);
-				user.purpleCoins += bet.amount * phraseList.length;
-				// user.purpleCoins += bet.amount * payout[bet.phrase];
+		let channelID = server.selectedChannel;
+		if (channelID.length === 0) {
+			
+			// send message
+			let phrase = randomPhrase();
+			client.channels.cache.get(channelID).send(phraseList[phrase]);
+			
+			// payout bets
+			let betters = new Set();
+			for (let bet of server.betList) {
+				betters.add(bet.userId);
+				bet.phrase -= 1;
+				if (bet.phrase === phrase) {
+					// n^2 but whatever
+					let user = getUser(server, bet.userId);
+					user.purpleCoins += bet.amount * phraseList.length;
+					// user.purpleCoins += bet.amount * payout[bet.phrase];
+				}
 			}
+			server.betList = [];
+			
+			// coin bleeding
+			for (let user in server.userList)
+				if (!betters.has(user.userId)) {
+					user.purpleCoins -= abstainTax;
+					if (user.purpleCoins < 0)
+						user.purpleCoins = 0;
+				}
 		}
-		server.betList = [];
-		
-		// coin bleeding
-		for (let user in server.userList)
-			if (!betters.has(user.userId)) {
-				user.purpleCoins -= abstainTax;
-				if (user.purpleCoins < 0)
-					user.purpleCoins = 0;
-			}
-		
 		
 		await server.save(err => {})
-		
 	}
 	
 	restartTimeout();
