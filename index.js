@@ -193,7 +193,7 @@ const triggerEvent = async() => {
 				user.claimedDaily = false;
 		
 		let channelID = server.selectedChannel;
-		if (channelID.length === 0) {
+		if (channelID.length !== 0) {
 			
 			// send message
 			let phrase = randomPhrase();
