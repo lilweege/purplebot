@@ -168,7 +168,7 @@ const nextEvent = () => {
 const version = "1.1";
 const dailyAmount = 75;
 const minimumBet = 25;
-const abstainTax = 50;
+const abstainTax = 25;
 
 // const alex = "<@275843202219507712>";
 const phraseList = ["126", "buuuuuuuuuuuuurrrrrrrrrrrrrrp", "rootbeer", "poutine time", "currently right now at the moment grinding fate", "shut the fuck up you dumb crodie"];
@@ -413,9 +413,9 @@ const list = async(msg, args) => {
 
 const rules = async(msg, args) => {
 	msg.channel.send(`:purple_circle: purplebot126 v${version} gamerules :purple_circle:
-- daily 75 coin claim available every 12 hours
-- if you haven't placed a bet but claimed daily you lose 50 coins
-- the minimum bet amount is 25 coins
+- daily ${dailyAmount} coin claim available every 12 hours
+- if you haven't placed a bet but claimed daily you lose ${abstainTax} coins
+- the minimum bet amount is ${minimumBet} coins
 - all coins reset at end of month
 - #1 top is the winner of the month`);
 }
