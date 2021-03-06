@@ -187,11 +187,6 @@ const restartTimeout = () => {
 const triggerEvent = async() => {
 	let servers = await getServers();
 	for (let server of servers) {
-		// reset daily claims
-		for (let user of server.userList)
-			if (user.claimedDaily)
-				user.claimedDaily = false;
-		
 		let channelID = server.selectedChannel;
 		if (channelID.length !== 0) {
 			
@@ -222,7 +217,12 @@ const triggerEvent = async() => {
 				}
 		}
 		
-		await server.save(err => {})
+		// reset daily claims
+		for (let user of server.userList)
+			if (user.claimedDaily)
+				user.claimedDaily = false;
+		
+		await server.save(err => {});
 	}
 	
 	restartTimeout();
