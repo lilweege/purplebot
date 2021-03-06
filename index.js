@@ -215,7 +215,7 @@ const triggerEvent = async() => {
 			
 			// coin bleeding
 			for (let user in server.userList)
-				if (!betters.has(user.userId)) {
+				if (!betters.has(user.userId) && user.claimedDaily) {
 					user.purpleCoins -= abstainTax;
 					if (user.purpleCoins < 0)
 						user.purpleCoins = 0;
@@ -409,7 +409,7 @@ const list = async(msg, args) => {
 const rules = async(msg, args) => {
 	msg.channel.send(`:purple_circle: purplebot126 v${version} gamerules :purple_circle:
 - daily 75 coin claim available every 12 hours
-- if you haven't placed a bet you lose 50 coins
+- if you haven't placed a bet but claimed daily you lose 50 coins
 - the minimum bet amount is 25 coins
 - all coins reset at end of month
 - #1 top is the winner of the month`);
