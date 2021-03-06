@@ -279,27 +279,32 @@ const bal = async(msg, args) => {
 }
 
 const top = async(msg, args) => {
-	msg.channel.send("top command temporarily disabled");
-	return;
-	
 	let board = ":purple_circle: purple coin leaderboard :purple_circle:\n";
 	const guildID = msg.guild.id;
 	let server = await findServer(guildID);
 	let users = server.userList;
 	users.sort((a, b) => b.purpleCoins - a.purpleCoins);
-	// console.log(users);
-	let i = 0;
-	console.log("getting members");
-	let members = msg.guild.members.fetch();
-	console.log("members:", members);
 	
-	for (let user in users) {
-		let userID = users[user].userId;
-		if (!users[user] || users[user].purpleCoins === 0 || i > 10)
+	let i = 0;
+	for (let user of users) {
+		if (user.purpleCoins === 0 || i > 10)
 			break;
 		
-		// if (cur && cur.user)
-			// board += `#${++i}: ${cur.user.username} with ${users[user].purpleCoins} coins\n`;
+		let userID = user.userId;
+		let member = msg.guild.members.cache.get(userID);
+		if (member) {
+			member = member.user;
+		}
+		else {
+			await msg.guild.members.fetch(userID)
+				.then(m => {
+					member = m.user;
+				})
+				.catch(err => {});
+		}
+		
+		if (member)
+			board += `#${++i}: ${member.username} with ${user.purpleCoins} coins\n`;
 	}
 	msg.channel.send(board);
 }
