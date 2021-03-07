@@ -169,10 +169,13 @@ const version = "1.1";
 const dailyAmount = 75;
 const minimumBet = 25;
 const abstainTax = 25;
+const jackpotRate = 0.01;
 
 // const alex = "<@275843202219507712>";
-const phraseList = ["126", "buuuuuuuuuuuuurrrrrrrrrrrrrrp", "rootbeer", "poutine time", "currently right now at the moment grinding fate", "shut the fuck up you dumb crodie"];
-const randomPhrase = () => Math.floor(Math.random() * phraseList.length);
+const alex = "<@196045824881328129>";
+const phraseList = ["126", "buuuuuuuuuuuuurrrrrrrrrrrrrrp", "rootbeer", "poutine time", "currently right now at the moment grinding fate", "shut the fuck up you dumb crodie", `${alex}`];
+// item at last position is jackpot
+const randomPhrase = () => (Math.random() < jackpotRate) ? (phraseList.length - 1) : Math.floor(Math.random() * (phraseList.length - 1));
 
 let timeout;
 const restartTimeout = () => {
@@ -195,6 +198,7 @@ const triggerEvent = async() => {
 			client.channels.cache.get(channelID).send(phraseList[phrase]);
 			
 			// payout bets
+			let payoutMultiplier = (phrase === (phraseList.length - 1)) ? (phraseList.length - 1) : (1 / jackpotRate);
 			let betters = new Set();
 			for (let bet of server.betList) {
 				betters.add(bet.userId);
@@ -202,8 +206,7 @@ const triggerEvent = async() => {
 				if (bet.phrase === phrase) {
 					// n^2 but whatever
 					let user = getUser(server, bet.userId);
-					user.purpleCoins += bet.amount * phraseList.length;
-					// user.purpleCoins += bet.amount * payout[bet.phrase];
+					user.purpleCoins += bet.amount * payoutMultiplier;
 				}
 			}
 			server.betList = [];
@@ -400,14 +403,17 @@ const bet = async(msg, args) => {
 	
 	await updateUser(server, userID, { coins: user.purpleCoins - amount });
 	await newBet(server, userID, amount, phrase);
-	msg.channel.send(`${amount} coins placed on ${phraseList[phrase - 1]}`);
+	msg.channel.send(`${amount} coins placed on ${phraseList[phrase - 1]}`, {"allowedMentions": { "users" : []}});
 }
 
 const list = async(msg, args) => {
 	let res = "use command \"bet amount #\" to place bet\n";
-	for (let phrase in phraseList)
-		res += `${parseInt(phrase)+1}: ${phraseList[phrase]}\n`;
-	msg.channel.send(res)
+	for (let i = 0; i < phraseList.length - 1; i++)
+		res += `${i + 1}: ${phraseList[i]}\n`;
+	res += `${phraseList.length} (${jackpotRate * 100}% jackpot): ${phraseList[phraseList.length - 1]}`;
+	
+	// don't ping mention
+	msg.channel.send(res, {"allowedMentions": { "users" : []}});
 }
 
 const rules = async(msg, args) => {
