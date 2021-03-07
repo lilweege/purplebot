@@ -171,8 +171,8 @@ const minimumBet = 25;
 const abstainTax = 25;
 const jackpotRate = 0.01;
 
-// const alex = "<@275843202219507712>";
-const alex = "<@196045824881328129>";
+const alex = "<@275843202219507712>";
+// const alex = "<@196045824881328129>";
 const phraseList = ["126", "buuuuuuuuuuuuurrrrrrrrrrrrrrp", "rootbeer", "poutine time", "currently right now at the moment grinding fate", "shut the fuck up you dumb crodie", `${alex}`];
 // item at last position is jackpot
 const randomPhrase = () => (Math.random() < jackpotRate) ? (phraseList.length - 1) : Math.floor(Math.random() * (phraseList.length - 1));
