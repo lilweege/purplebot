@@ -198,7 +198,7 @@ const triggerEvent = async() => {
 			client.channels.cache.get(channelID).send(phraseList[phrase]);
 			
 			// payout bets
-			let payoutMultiplier = (phrase === (phraseList.length - 1)) ? (phraseList.length - 1) : (1 / jackpotRate);
+			let payoutMultiplier = (phrase === (phraseList.length - 1)) ? (1 / jackpotRate) : (phraseList.length - 1);
 			let betters = new Set();
 			for (let bet of server.betList) {
 				betters.add(bet.userId);
