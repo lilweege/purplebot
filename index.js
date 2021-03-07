@@ -208,21 +208,20 @@ const triggerEvent = async() => {
 			}
 			server.betList = [];
 			
-			// coin bleeding
-			for (let user in server.userList)
-				if (!betters.has(user.userId) && user.claimedDaily) {
-					user.purpleCoins -= abstainTax;
-					if (user.purpleCoins < 0)
-						user.purpleCoins = 0;
+			// coin tax, reset daily
+			for (let user of server.userList)
+				if (user.claimedDaily) {
+					if (!betters.has(user.userId)) {
+						user.purpleCoins -= abstainTax;
+						if (user.purpleCoins < 0)
+							user.purpleCoins = 0;
+					}
+					
+					user.claimedDaily = false;
 				}
+			
+			await server.save(err => {});
 		}
-		
-		// reset daily claims
-		for (let user of server.userList)
-			if (user.claimedDaily)
-				user.claimedDaily = false;
-		
-		await server.save(err => {});
 	}
 	
 	restartTimeout();
