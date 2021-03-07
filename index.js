@@ -165,7 +165,7 @@ const nextEvent = () => {
 }
 
 
-const version = "1.1";
+const version = "1.2";
 const dailyAmount = 75;
 const minimumBet = 25;
 const abstainTax = 25;
