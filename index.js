@@ -111,7 +111,8 @@ const getOrCreateUser = async(server, userID) => {
 
 
 
-const human_millis = (ms, digits=10) => {
+// time stuff
+const human_millis = (ms, digits=3) => {
 	// yoinked from https://stackoverflow.com/questions/8211744/convert-time-interval-given-in-seconds-into-more-human-readable-form
 	const levels=[
 		["ms", 1000],
@@ -139,30 +140,92 @@ const human_millis = (ms, digits=10) => {
 	return value.toFixed(digits) + " " + name;
 }
 
-const nextEvent = () => {
-	let now = new Date();
-	// the time offset from the machine
-	// that heroku uses to host and EST
-	let EST = 5;
-	let OFFSET = EST - (now.getTimezoneOffset() / 60);
-	// console.log("machine timezone offset:", OFFSET, "hours");
-	let first = new Date();
-	
-	// starting time
-	now.setHours(now.getHours());
-	// for some reason discord seems to be
-	// a little less than a second behind real
-	// time, so simply add one seconds as
-	// a buffer so we don't arrive too early
-	first.setHours(1 + OFFSET, 26, 1, 0);
-	
-	let diff = first - now;
-	while (diff < 0) {
-		first.setHours(first.getHours() + 12);
-		diff = first - now;
-	}
-	return diff;
+// yoink from https://stackoverflow.com/a/56429156/12637867
+function dstOffsetAtDate(dateInput) {
+    var fullYear = dateInput.getFullYear()|0;
+	// "Leap Years are any year that can be exactly divided by 4 (2012, 2016, etc)
+ 	//   except if it can be exactly divided by 100, then it isn't (2100,2200,etc)
+ 	//	  except if it can be exactly divided by 400, then it is (2000, 2400)"
+	// (https://www.mathsisfun.com/leap-years.html).
+    var isLeapYear = ((fullYear & 3) | (fullYear/100 & 3)) === 0 ? 1 : 0;
+	// (fullYear & 3) = (fullYear % 4), but faster
+    //Alternative:var isLeapYear=(new Date(currentYear,1,29,12)).getDate()===29?1:0
+    var fullMonth = dateInput.getMonth()|0;
+    return (
+        // 1. We know what the time since the Epoch really is
+        (+dateInput) // same as the dateInput.getTime() method
+        // 2. We know what the time since the Epoch at the start of the year is
+        - (+new Date(fullYear, 0, 0)) // day defaults to 1 if not explicitly zeroed
+        // 3. Now, subtract what we would expect the time to be if daylight savings
+        //      did not exist. This yields the time-offset due to daylight savings.
+        - ((
+            ((
+                // Calculate the day of the year in the Gregorian calendar
+                // The code below works based upon the facts of signed right shifts
+                //    • (x) >> n: shifts n and fills in the n highest bits with 0s 
+                //    • (-x) >> n: shifts n and fills in the n highest bits with 1s
+                // (This assumes that x is a positive integer)
+                (31 & ((-fullMonth) >> 4)) + // January // (-11)>>4 = -1
+                ((28 + isLeapYear) & ((1-fullMonth) >> 4)) + // February
+                (31 & ((2-fullMonth) >> 4)) + // March
+                (30 & ((3-fullMonth) >> 4)) + // April
+                (31 & ((4-fullMonth) >> 4)) + // May
+                (30 & ((5-fullMonth) >> 4)) + // June
+                (31 & ((6-fullMonth) >> 4)) + // July
+                (31 & ((7-fullMonth) >> 4)) + // August
+                (30 & ((8-fullMonth) >> 4)) + // September
+                (31 & ((9-fullMonth) >> 4)) + // October
+                (30 & ((10-fullMonth) >> 4)) + // November
+                // There are no months past December: the year rolls into the next.
+                // Thus, fullMonth is 0-based, so it will never be 12 in Javascript
+                
+                (dateInput.getDate()|0) // get day of the month
+				
+            )&0xffff) * 24 * 60 // 24 hours in a day, 60 minutes in an hour
+            + (dateInput.getHours()&0xff) * 60 // 60 minutes in an hour
+            + (dateInput.getMinutes()&0xff)
+        )|0) * 60 * 1000 // 60 seconds in a minute * 1000 milliseconds in a second
+        - (dateInput.getSeconds()&0xff) * 1000 // 1000 milliseconds in a second
+        - dateInput.getMilliseconds()
+    );
 }
+
+const msToHr = ms => ms / 60 / 60 / 1000;
+const hrToMs = hr => hr * 60 * 60 * 1000;
+
+// date gets messed up in (UTC-0:300) Brasilia  ???????
+// is one hour off if "adjust for dst automatically" disabled
+const nextEvent = () => {
+	const now = new Date();
+	const localTime = now.getTime(); // in ms
+	const localOffset = - now.getTimezoneOffset() / 60;
+	
+	// this gets screwed up if windows doesn't
+	// have "adjust for dst automatically" enabled
+	// who knows what happens on other systems ????
+	const estOffset = - 5 - msToHr(dstOffsetAtDate(now));
+	
+	// only integer number of hours works
+	let hourOffset = localOffset - estOffset;
+	
+	// if minutes > 60, it will automatically wrap
+	let mins = 26 + (hourOffset % 1) * 60;
+	hourOffset = Math.floor(hourOffset);
+	
+	// desire 1:26am est
+	let desired = new Date();
+	desired.setHours(1 + hourOffset, mins, 1, 0);
+	
+	// shift forwards if has already passed
+	let timeDiff = desired - now;
+	while (timeDiff < 0) {
+		// if hours > 24 days will automatically wrap
+		desired.setHours(desired.getHours() + 12);
+		timeDiff = desired - now;
+	}
+	return timeDiff;
+}
+
 
 
 const version = "1.2";
