@@ -194,27 +194,25 @@ const msToHr = ms => ms / 60 / 60 / 1000;
 const hrToMs = hr => hr * 60 * 60 * 1000;
 
 // date gets messed up in (UTC-0:300) Brasilia  ???????
-// is one hour off if "adjust for dst automatically" disabled
 const nextEvent = () => {
 	const now = new Date();
+	
 	const localTime = now.getTime(); // in ms
 	const localOffset = - now.getTimezoneOffset() / 60;
 	
-	// this gets screwed up if windows doesn't
-	// have "adjust for dst automatically" enabled
-	// who knows what happens on other systems ????
-	const estOffset = - 5 - msToHr(dstOffsetAtDate(now));
+	const dst = msToHr(dstOffsetAtDate(now));
+	const estOffset = -4 + dst;
 	
 	// only integer number of hours works
 	let hourOffset = localOffset - estOffset;
 	
-	// if minutes > 60, it will automatically wrap
+	// if minutes > 60, hours will automatically wrap
 	let mins = 26 + (hourOffset % 1) * 60;
 	hourOffset = Math.floor(hourOffset);
 	
 	// desire 1:26am est
 	let desired = new Date();
-	desired.setHours(1 + hourOffset, mins, 1, 0);
+	desired.setHours(1 + hourOffset + dst, mins, 1, 0);
 	
 	// shift forwards if has already passed
 	let timeDiff = desired - now;
