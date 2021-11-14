@@ -200,8 +200,9 @@ const nextEvent = () => {
 	const localTime = now.getTime(); // in ms
 	const localOffset = - now.getTimezoneOffset() / 60;
 	
-	const dst = msToHr(dstOffsetAtDate(now));
-	const estOffset = -4 + dst;
+	// FIXME: not sure if this is correct at all
+	const dst = 1+msToHr(dstOffsetAtDate(now));
+	const estOffset = -4;
 	
 	// only integer number of hours works
 	let hourOffset = localOffset - estOffset;
@@ -209,10 +210,11 @@ const nextEvent = () => {
 	// if minutes > 60, hours will automatically wrap
 	let mins = 26 + (hourOffset % 1) * 60;
 	hourOffset = Math.floor(hourOffset);
+	let hours = 1 + hourOffset + dst;
 	
 	// desire 1:26am est
 	let desired = new Date();
-	desired.setHours(1 + hourOffset + dst, mins, 1, 0);
+	desired.setHours(hours, mins, 1, 0);
 	
 	// shift forwards if has already passed
 	let timeDiff = desired - now;
