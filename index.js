@@ -201,7 +201,7 @@ const nextEvent = () => {
 	const localOffset = - now.getTimezoneOffset() / 60;
 	
 	// FIXME: not sure if this is correct at all
-	const dst = 1+msToHr(dstOffsetAtDate(now));
+	const dst = msToHr(dstOffsetAtDate(now));
 	const estOffset = -4;
 	
 	// only integer number of hours works
